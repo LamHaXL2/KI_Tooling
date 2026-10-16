@@ -1,0 +1,165 @@
+<div class="app-shell">
+    <header class="topbar">
+        <a class="brand" href="#overview" aria-label="Werk Nord, Übersicht">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="brand-copy"><strong>WERK NORD</strong><small>PRODUKTIONSMONITOR</small></span>
+        </a>
+        <div class="topbar-meta">
+            <span class="plant-label"><span class="status-dot"></span> INTRANET · MONTAGE</span>
+            <span class="topbar-divider"></span>
+            <span class="topbar-date">{{ data() ? formatDate(data()!.datum) : 'Lade Schichtdaten …' }}</span>
+        </div>
+        <button class="refresh-button" type="button" (click)="refresh()" [disabled]="loading()"
+            aria-label="Daten jetzt aktualisieren" title="Jetzt aktualisieren">
+            <svg [class.spinning]="loading()" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 7v5h-5M4.8 9A7.5 7.5 0 0 1 18 6l2 6M4 12v5h5m10.2-2A7.5 7.5 0 0 1 6 18l-2-6" />
+            </svg>
+        </button>
+    </header>
+
+    <main id="overview" class="main-content">
+        <section class="page-heading">
+            <div>
+                <div class="eyebrow"><span>WERK NORD</span><span class="eyebrow-slash">/</span><span>MONTAGE ·
+                        BANDABSCHNITT 7</span></div>
+                <h1>Auslastung <span class="heading-period">/ Schichtmonitor</span></h1>
+            </div>
+            <div class="team-select-wrap">
+                <label for="team-select">TEAM</label>
+                <select id="team-select" [value]="data()?.team ?? ''" disabled>
+                    <option [value]="data()?.team ?? ''">{{ data()?.team ?? '…' }}</option>
+                </select>
+                <span class="select-caret" aria-hidden="true">⌄</span>
+            </div>
+        </section>
+
+        @if (loadError()) {
+        <div class="error-banner" role="alert">
+            <span class="error-symbol">!</span>
+            <span><strong>Verbindung unterbrochen.</strong> Die aktuellen Monitorwerte konnten nicht geladen
+                werden.</span>
+            <button type="button" (click)="refresh()">Erneut versuchen</button>
+        </div>
+        }
+
+        @if (data(); as snapshot) {
+        <section class="shift-strip" aria-label="Schichtinformationen">
+            <div class="shift-name"><span class="shift-icon" aria-hidden="true">☀</span><span>{{ snapshot.schicht
+                    }}schicht</span></div>
+            <span class="strip-separator"></span>
+            <span class="shift-date">{{ formatDate(snapshot.datum) }}</span>
+            <span class="shift-state" [class.state-demo]="!isCurrentDate()">
+                @if (isCurrentDate()) { <span class="pulse-dot"></span> }
+                {{ isCurrentDate() ? 'SCHICHT LÄUFT' : 'BEISPIELDATEN' }}
+            </span>
+            <span class="refresh-state">{{ loading() ? 'Aktualisiere …' : 'Aktualisiert ' + formatTime(lastUpdated())
+                }}</span>
+        </section>
+
+        <section class="metrics" aria-label="Schichtkennzahlen">
+            <article class="metric metric-workstations">
+                <div class="metric-label">ARBEITSPLÄTZE</div>
+                <div class="metric-value">{{ snapshot.arbeitsplaetze.length }}<span class="metric-unit"> AP</span></div>
+                <div class="metric-note">in Team {{ snapshot.team }}</div>
+                <span class="metric-index">01</span>
+            </article>
+            <article class="metric metric-current">
+                <div class="metric-label">ÜBERLAST AKTUELL</div>
+                <div class="metric-value" [class.value-alert]="currentOverloads() > 0">{{ currentOverloads() }}<span
+                        class="metric-unit"> / {{ snapshot.arbeitsplaetze.length }}</span></div>
+                <div class="metric-note">Arbeitsplätze über 100 %</div>
+                <span class="metric-index">02</span>
+            </article>
+            <article class="metric metric-average">
+                <div class="metric-label">Ø AUSLASTUNG AKTUELL</div>
+                <div class="metric-value">{{ formatPercent(currentAverage()) }}</div>
+                <div class="metric-note">über alle Arbeitsplätze</div>
+                <span class="metric-index">03</span>
+            </article>
+            <article class="metric metric-preview">
+                <div class="metric-label">VORSCHAU</div>
+                <div class="metric-value">{{ previewCount() }}<span class="metric-unit"> FENSTER</span></div>
+                <div class="metric-note">kommende Stundenfenster</div>
+                <span class="metric-index">04</span>
+            </article>
+        </section>
+
+        <section class="monitor-section" aria-labelledby="monitor-title">
+            <div class="section-heading">
+                <div class="section-title-group">
+                    <div class="section-kicker">LIVE-ÜBERSICHT <span>·</span> TEAM {{ snapshot.team }}</div>
+                    <h2 id="monitor-title">Auslastung je Stundenfenster</h2>
+                </div>
+                <div class="legend" aria-label="Legende">
+                    <span><i class="legend-swatch normal"></i> bis 100 %</span>
+                    <span><i class="legend-swatch over"></i> über 100 %</span>
+                    <span><i class="legend-outline"></i> Fensterüberlast</span>
+                </div>
+            </div>
+
+            <div class="table-scroll">
+                <table class="load-table">
+                    <thead>
+                        <tr>
+                            <th class="time-heading" scope="col"><span>ZEITFENSTER</span></th>
+                            @for (station of snapshot.arbeitsplaetze; track station) {
+                            <th class="station-heading" scope="col"><span>{{ station }}</span></th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (window of snapshot.stundenfenster; track window.uhrzeit) {
+                        <tr [class.current-row]="window.status === 'aktuell'"
+                            [class.preview-row]="window.status === 'vorschau'"
+                            [class.overload-warning]="windowSeverity(window) === 'warning'"
+                            [class.overload-critical]="windowSeverity(window) === 'critical'">
+                            <th class="time-cell" scope="row">
+                                <span class="time-range">{{ window.uhrzeit }}</span>
+                                <span class="window-status" [class.status-live]="window.status === 'aktuell'"
+                                    [class.status-preview]="window.status === 'vorschau'">
+                                    @if (window.status === 'aktuell') { <i class="mini-pulse"></i> }
+                                    {{ window.status === 'aktuell' ? 'JETZT' : window.status === 'vorschau' ? 'VORSCHAU'
+                                    : 'VORBEI' }}
+                                </span>
+                                @if (overloadCount(window) > 0) {
+                                <span class="window-overloads">{{ overloadCount(window) }}× ÜBERLAST</span>
+                                }
+                            </th>
+                            @for (station of snapshot.arbeitsplaetze; track station) {
+                            @let load = window.werte?.[station];
+                            <td class="load-cell" [class.overloaded]="(load ?? 0) > 100"
+                                [class.empty-cell]="load == null"
+                                [attr.aria-label]="station + ': ' + formatPercent(load ?? null)">
+                                @if (load != null) {
+                                <span>{{ formatPercent(load) }}</span>
+                                <span class="load-track"><i [style.width.%]="barWidth(load)"
+                                        [class.track-over]="load > 100"></i></span>
+                                } @else {
+                                <span class="no-data">–</span>
+                                <span class="load-track"><i class="track-empty"></i></span>
+                                }
+                            </td>
+                            }
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-footnote">
+                <span><span class="footnote-mark">i</span> Auslastung in Prozent der verfügbaren Arbeitszeit, Pausen
+                    bereits berücksichtigt.</span>
+                <span>ÜBERLAST-RAHMEN <i class="footnote-outline yellow"></i> 1–2 AP <i
+                        class="footnote-outline red"></i> ab 3 AP</span>
+            </div>
+        </section>
+
+        <footer class="page-footer">
+            <span>WERK NORD <b>·</b> MONTAGE BANDABSCHNITT 7</span>
+            <span>AUTOMATISCHE AKTUALISIERUNG <b>·</b> ALLE 3 MINUTEN</span>
+            <span>MONITORING <i class="footer-live"></i></span>
+        </footer>
+        } @else if (!loadError()) {
+        <div class="loading-state"><span class="loading-ring"></span><span>Schichtdaten werden geladen …</span></div>
+        }
+    </main>
+</div>

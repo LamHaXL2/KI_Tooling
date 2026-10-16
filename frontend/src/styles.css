@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+    color-scheme: light;
+    --paper: #f3f5f2;
+    --ink: #202d28;
+    --line: #dce2dd;
+    --muted: #89938e;
+    --mint: #8bc5a8;
+    --mint-dark: #378264;
+    --coral: #dc6a5a;
+    --coral-dark: #bd4f42;
+    --sky: #599bad;
+    --body: 'DM Sans', sans-serif;
+    --display: 'Barlow Condensed', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    font-family: var(--body);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    min-width: 320px;
+    min-height: 100vh;
+    margin: 0;
+    background: var(--paper);
+}
+
+button,
+select {
+    font: inherit;
+}
+
+button:focus-visible,
+select:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--sky);
+    outline-offset: 3px;
+}
