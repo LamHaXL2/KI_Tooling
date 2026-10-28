@@ -26,8 +26,10 @@
             </div>
             <div class="team-select-wrap">
                 <label for="team-select">TEAM</label>
-                <select id="team-select" [value]="data()?.team ?? ''" disabled>
-                    <option [value]="data()?.team ?? ''">{{ data()?.team ?? '…' }}</option>
+                <select id="team-select" [value]="selectedTeam()" (change)="selectTeam($event)" [disabled]="loading()">
+                    @for (team of teams; track team) {
+                    <option [value]="team">{{ team }}</option>
+                    }
                 </select>
                 <span class="select-caret" aria-hidden="true">⌄</span>
             </div>

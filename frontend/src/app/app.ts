@@ -26,7 +26,13 @@ export class App {
   private readonly http = inject(HttpClient);
   private readonly destroyRef = inject(DestroyRef);
   private readonly refreshRequest = new Subject<void>();
+  private readonly dataSources: Record<string, string> = {
+    '7A': 'assets/Monitorwerte.json',
+    '7B': 'assets/Monitorwerte_Team7B.json'
+  };
 
+  protected readonly teams = Object.keys(this.dataSources);
+  protected readonly selectedTeam = signal('7A');
   protected readonly data = signal<MonitoringData | null>(null);
   protected readonly lastUpdated = signal<Date | null>(null);
   protected readonly loading = signal(true);
@@ -58,7 +64,7 @@ export class App {
           this.loadError.set(false);
         }),
         switchMap(() =>
-          this.http.get<MonitoringData>('assets/Monitorwerte.json').pipe(
+          this.http.get<MonitoringData>(this.dataSources[this.selectedTeam()]).pipe(
             catchError(() => {
               this.loading.set(false);
               this.loadError.set(true);
@@ -77,6 +83,14 @@ export class App {
 
   protected refresh(): void {
     this.refreshRequest.next();
+  }
+
+  protected selectTeam(event: Event): void {
+    const team = (event.target as HTMLSelectElement).value;
+    if (this.dataSources[team] && team !== this.selectedTeam()) {
+      this.selectedTeam.set(team);
+      this.refreshRequest.next();
+    }
   }
 
   protected formatPercent(value: number | null): string {

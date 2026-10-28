@@ -49,7 +49,7 @@
                 "input": "public"
               },
               {
-                "glob": "Monitorwerte.json",
+                "glob": "Monitorwerte*.json",
                 "input": "../Anforderungen/Master Data",
                 "output": "assets/"
               }

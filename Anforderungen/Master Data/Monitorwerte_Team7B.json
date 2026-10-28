@@ -1,0 +1,38 @@
+{
+  "team": "7B",
+  "schicht": "Früh",
+  "datum": "2026-10-12",
+  "arbeitsplaetze": ["AP1", "AP2", "AP3", "AP4"],
+  "stundenfenster": [
+    {
+      "uhrzeit": "06:00-07:00",
+      "status": "vergangen",
+      "werte": { "AP1": 91.0, "AP2": 88.0, "AP3": 84.0, "AP4": 80.0 }
+    },
+    {
+      "uhrzeit": "07:00-08:00",
+      "status": "vergangen",
+      "werte": { "AP1": 93.0, "AP2": 90.0, "AP3": 86.0, "AP4": 82.0 }
+    },
+    {
+      "uhrzeit": "08:15-09:15",
+      "status": "vergangen",
+      "werte": { "AP1": 94.0, "AP2": 89.0, "AP3": 85.0, "AP4": 83.0 }
+    },
+    {
+      "uhrzeit": "09:15-10:15",
+      "status": "aktuell",
+      "werte": { "AP1": 96.0, "AP2": 90.0, "AP3": 84.0, "AP4": 86.0 }
+    },
+    {
+      "uhrzeit": "10:45-11:45",
+      "status": "vorschau",
+      "werte": { "AP1": 95.0, "AP2": 91.0, "AP3": 87.0, "AP4": 83.0 }
+    },
+    {
+      "uhrzeit": "11:45-12:45",
+      "status": "vorschau",
+      "werte": null
+    }
+  ]
+}
